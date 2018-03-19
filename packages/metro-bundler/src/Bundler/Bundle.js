@@ -343,6 +343,29 @@ class Bundle extends BundleBase {
         .map(module => module.sourcePath)
     );
   }
+  
+  getManifest () {
+    const modules = this.getModules();
+    const manifest = {
+      modules: {},
+      lastId:0
+    } 
+
+    modules.forEach(module => {
+      if (module.name && !module.isPolyfill && !module.isRequireCall) {
+        manifest.modules[module.name] = {
+          id: module.id,
+        };
+      }
+      if (typeof module.id === 'number' && typeof manifest.lastId === 'number') {
+        manifest.lastId = Math.max(manifest.lastId, module.id);
+      } else {
+        manifest.lastId = module.id
+      }
+    })
+
+    return manifest;
+  }
 
   getDebugInfo() {
     return [

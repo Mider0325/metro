@@ -44,6 +44,10 @@ function createCodeWithMap(
   };
 }
 
+function creatBundleManifest (bundle) {
+    return JSON.stringify(bundle.getManifest(), null, 2)
+}
+
 function saveBundleAndMap(
   bundle: Bundle,
   options: OutputOptions,
@@ -87,6 +91,13 @@ function saveBundleAndMap(
     const writeMap = writeFile(sourcemapOutput, map, null);
     writeMap.then(() => log('Done writing sourcemap output'));
     return Promise.all([writeBundle, writeMetadata, writeMap]);
+  } else if (manifestOutput){
+    // 生成 manifest
+    log('writing manifest out put', manifestOutput)
+    const manifest = creatBundleManifest(bundle)
+    const writeManifest = writeFile(bundleOutput, manifest, null)
+    writeManifest.then(() => log('Done Write manifest output'))
+    return Promise.all([writeBundle, writeMetadata, writeManifest]);
   } else {
     return writeBundle;
   }

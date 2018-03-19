@@ -187,7 +187,17 @@ class Bundler {
       transformModuleHash,
     ];
 
-    this._getModuleId = createModuleIdFactory();
+    // this._getModuleId = createModuleIdFactory();
+    // 获取common 文件的最大id
+    let manifest = false
+    if (opts.manifestFile) {
+      var file = opts.manifestFile
+      var result = JSON.parse(fs.readFileSync(file));
+      manifest = result;
+    }
+    this._startModuleId = manifest ? (1 + manifest.lastId) : 0;
+    this._extenalModules = manifest ? manifest.modules : null;
+    this._getModuleId = createModuleIdFactory(this._startModuleId)
 
     let getCacheKey = (options: mixed) => '';
     if (opts.transformModulePath) {
@@ -422,8 +432,16 @@ class Bundler {
       this._resolverPromise
         .then(resolver =>
           Promise.all(
-            transformedModules.map(({module, transformed}) =>
-              finalBundle.addModule(resolver, response, module, transformed),
+            transformedModules.map(({module, transformed}) => {
+              if (this._extenalModules) {
+                if (transformed.name && !transformed.isPolyfill && !this._extenalModules[transformed.name]) {
+                 return (finalBundle.addModule(resolver, response, module, transformed))
+                } else {
+                  return ''
+                }
+             }
+              return  finalBundle.addModule(resolver, response, module, transformed)
+            }
             ),
           ),
         )
@@ -672,7 +690,7 @@ class Bundler {
       {dev, platform, recursive, prependPolyfills},
       bundlingOptions,
       onProgress,
-      isolateModuleIDs ? createModuleIdFactory() : this._getModuleId,
+      isolateModuleIDs ? this._getModuleId : createModuleIdFactory(),
     );
     return response;
   }
