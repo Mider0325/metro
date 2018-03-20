@@ -62,6 +62,7 @@ function saveBundleAndMap(
     dev,
     sourcemapOutput,
     sourcemapSourcesRoot,
+    manifestOutput,
   } = options;
 
   log('start');
@@ -95,7 +96,7 @@ function saveBundleAndMap(
     // 生成 manifest
     log('writing manifest out put', manifestOutput)
     const manifest = creatBundleManifest(bundle)
-    const writeManifest = writeFile(bundleOutput, manifest, null)
+    const writeManifest = writeFile(manifestOutput, manifest, null)
     writeManifest.then(() => log('Done Write manifest output'))
     return Promise.all([writeBundle, writeMetadata, writeManifest]);
   } else {
